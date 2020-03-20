@@ -1,0 +1,53 @@
+{
+  "runtimeTarget": {
+    "name": ".NETStandard,Version=v2.1/",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETStandard,Version=v2.1": {},
+    ".NETStandard,Version=v2.1/": {
+      "FIS.USESA.POC.Plugins.ExampleA/1.0.0": {
+        "dependencies": {
+          "FIS.USESA.POC.Plugins.Interfaces": "1.0.0",
+          "System.Composition.AttributedModel": "1.4.0"
+        },
+        "runtime": {
+          "FIS.USESA.POC.Plugins.ExampleA.dll": {}
+        }
+      },
+      "System.Composition.AttributedModel/1.4.0": {
+        "runtime": {
+          "lib/netstandard2.0/System.Composition.AttributedModel.dll": {
+            "assemblyVersion": "1.0.35.0",
+            "fileVersion": "4.700.19.56404"
+          }
+        }
+      },
+      "FIS.USESA.POC.Plugins.Interfaces/1.0.0": {
+        "runtime": {
+          "FIS.USESA.POC.Plugins.Interfaces.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "FIS.USESA.POC.Plugins.ExampleA/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "System.Composition.AttributedModel/1.4.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-nJpwGXzcKLPKHx1mvXbwtxU6o2tpzR529/pBe5NerXq75R5XcZHu6yMRUHcuroRor3+YlJi6l/l0klQfTYRzlQ==",
+      "path": "system.composition.attributedmodel/1.4.0",
+      "hashPath": "system.composition.attributedmodel.1.4.0.nupkg.sha512"
+    },
+    "FIS.USESA.POC.Plugins.Interfaces/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}
