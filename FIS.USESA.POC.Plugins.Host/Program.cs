@@ -78,11 +78,11 @@ namespace FIS.USESA.POC.Plugins.Host
             // ==========================
             List<EventBE> events = new List<EventBE>
             {
-                new EventBE() { EventType = @"ExampleA", Message = @"Message 1" },
-                new EventBE() { EventType = @"ExampleB", Message = @"Message 2" },
-                new EventBE() { EventType = @"ExampleB", Message = @"Message 3" },
-                new EventBE() { EventType = @"ExampleA", Message = @"Message 4" },
-                new EventBE() { EventType = @"ExampleB", Message = @"Message 5" }
+                new EventBE() { EventType = @"EventTypeA", Message = @"Message 1" },
+                new EventBE() { EventType = @"EventTypeB", Message = @"Message 2" },
+                new EventBE() { EventType = @"EventTypeB", Message = @"Message 3" },
+                new EventBE() { EventType = @"EventTypeA", Message = @"Message 4" },
+                new EventBE() { EventType = @"EventTypeB", Message = @"Message 5" }
             };
 
             // ==========================

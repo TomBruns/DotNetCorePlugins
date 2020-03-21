@@ -15,8 +15,8 @@ namespace FIS.USESA.POC.Plugins.ExampleA
     /// The ExportMetadata attribute allows this particular plug-in to be selected at runtime and must be unique!.
     /// </remarks>
     [Export(typeof(IEventPublisher))]
-    [ExportMetadata(MessageSenderType.ATTRIBUTE_NAME, @"ExampleA")]
-    public class ExampleASender : IEventPublisher
+    [ExportMetadata(MessageSenderType.ATTRIBUTE_NAME, @"EventTypeA")]
+    public class EventTypeAPublisher : IEventPublisher
     {
         const string TOPIC_NAME = @"MESSAGE_TYPE_A_TOPIC";
 
@@ -40,7 +40,7 @@ namespace FIS.USESA.POC.Plugins.ExampleA
         /// <returns>System.String.</returns>
         public string PublishEvent(string message)
         {
-            string response = $"==> Publish Message: [{message}] from [{nameof(ExampleASender)}] to topic: [{TOPIC_NAME}] on kafka cluster: [{_configInfo.BootstrapServers}]";
+            string response = $"==> Publish Message: [{message}] from [{nameof(EventTypeAPublisher)}] to topic: [{TOPIC_NAME}] on kafka cluster: [{_configInfo.BootstrapServers}]";
             Console.WriteLine(response);
 
             // TODO: write publishing logic
