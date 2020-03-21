@@ -74,7 +74,7 @@ namespace FIS.USESA.POC.Plugins.Host
             }
 
             // ==========================
-            // build a list of event types to process
+            // build a list of event to process
             // ==========================
             List<EventBE> events = new List<EventBE>
             {
