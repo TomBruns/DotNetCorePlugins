@@ -7,21 +7,32 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
 
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.FileExtensions;
+using Microsoft.Extensions.Configuration.Json;
+
 using FIS.USESA.POC.Plugins.Interfaces;
+using FIS.USESA.POC.Plugins.Interfaces.Entities;
 
 namespace FIS.USESA.POC.Plugins.Host
 {
     /// <summary>
-    /// This is a sample of a hosting program that will load plug-in assys and dynamically invoke a method on them.
+    /// This is a sample of a program that will load plug-in assys and dynamically invoke a method on them.
+    /// The plug-in assys coudl be written independantly and only need a reference to a shared assy that defines an interface they must implement
     /// </summary>
     /// <remarks>
-    /// Notes: This assy DOES NOT have any static compile time references to the plug-in assys!
-    ///        A post build step for this project copies all the plug-in assy from a known location
+    /// Notes: 
+    ///   This assy DOES NOT have any static compile time references to the plug-in assys!
+    ///   A post build step for this project copies all the plug-in assy from a known location to a specific subfolder of the buidl target folder
     /// </remarks>
     class Program
     {
-        // this the subfolder where are plug-in will be located
+        // this is the subfolder where all the plug-ins will be loaded from
         const string PLUGIN_FOLDER = @"Plugins";
+
+        // this collection holds the dynamically loaded assys    
+        [ImportMany()]
+        private static IEnumerable<Lazy<IEventPublisher, MessageSenderType>> MessageSenders { get; set; }
 
         static void Main(string[] args)
         {
@@ -29,57 +40,101 @@ namespace FIS.USESA.POC.Plugins.Host
             Console.WriteLine(" 1. loading plug-in assys from a subfolder on start-up");
             Console.WriteLine(" 2. dynamically pick a specific plug-in based on runtime supplied criteria");
             Console.WriteLine(" 3. invoke a method on the selected plug-in");
-            Console.WriteLine("This is all accomplished without compile-time refererences to the plug-in assys");
+            Console.WriteLine();
+            Console.WriteLine("Note: This is all accomplished without compile-time (ie static) references to the plug-in assys");
             Console.WriteLine("-------------------------------------------------------------------------------");
 
-            // upfront, load the plug-in assys 
+            // ==========================
+            // load some config info that we need to inject into all the plug-ins
+            // ==========================
+            IConfiguration config = new ConfigurationBuilder()
+                                          .AddJsonFile("appsettings.json", true, true)
+                                          .Build();
+
+            var kafkaConfig = config.GetSection("kafkaConfig").Get<KafkaServiceConfigBE>();
+
+            // ==========================
+            // load the plug-in assys 
+            // ==========================
             Compose();
-            Console.WriteLine($"Step 1: Loaded [{MessageSenders.Count()}] plug-in assys");
+
+            Console.WriteLine($"Step 1: Loaded [{MessageSenders.Count()}] plug-in assys from subfolder: [.\\{PLUGIN_FOLDER}]");
+            foreach(var plugin in MessageSenders)
+            {
+                Console.WriteLine($"==> {plugin.Value.GetType().Assembly.FullName}");
+            }
             Console.WriteLine();
 
-            // build a list of event types to process
-            List<string> eventTypes = new List<string> { @"ExampleA", @"ExampleB" };
-            Console.WriteLine($"Step 2: Process some messages dynamically calling the correct plug-in");
-            Run(eventTypes);
-        }
-
-        static void Run(List<string> eventTypes)
-        {
-            foreach(string eventType in eventTypes)
+            // ==========================
+            // on startup, inject the config info into all of the plug-ins
+            // ==========================
+            foreach (var plugin in MessageSenders)
             {
-                // dynamically get the correct plug-in assy
-                IMessageSender messageSender = GetMessageSender(eventType);
-
-                // call the method on the assy
-                messageSender.Send("Test");
+                plugin.Value.InjectConfig(kafkaConfig);
             }
 
-            System.Console.WriteLine("Hit any key to exit...");
-            System.Console.ReadLine();
+            // ==========================
+            // build a list of event types to process
+            // ==========================
+            List<EventBE> events = new List<EventBE>
+            {
+                new EventBE() { EventType = @"ExampleA", Message = @"Message 1" },
+                new EventBE() { EventType = @"ExampleB", Message = @"Message 2" },
+                new EventBE() { EventType = @"ExampleB", Message = @"Message 3" },
+                new EventBE() { EventType = @"ExampleA", Message = @"Message 4" },
+                new EventBE() { EventType = @"ExampleB", Message = @"Message 5" }
+            };
+
+            // ==========================
+            // process the events
+            // ==========================
+            // declare outside loop to reduce gc pressure
+            IEventPublisher eventPublisher = null;
+
+            Console.WriteLine($"Step 2&3: Process some messages dynamically calling the correct plug-in");
+            foreach (var eventInstance in events)
+            {
+                // use the string value of the EventType property to dynamically select the correct plug-in assy to use to process the event
+                eventPublisher = GetEventPublisher(eventInstance.EventType);
+
+                // call the method on the dynamically selected assy
+                eventPublisher.PublishEvent(eventInstance.Message);
+            }
+
+            Console.WriteLine(@"=============================================================");
+            Console.WriteLine(@"Hit any key to exit....");
+            Console.ReadLine();
         }
+
+        #region Helpers
 
         /// <summary>
         /// Dynamically pick the correct plug-in from the ones we loaded
         /// </summary>
         /// <param name="name">The name.</param>
-        /// <returns>IMessageSender.</returns>
-        private static IMessageSender GetMessageSender(string name)
+        /// <returns>IEventPublisher.</returns>
+        private static IEventPublisher GetEventPublisher(string name)
         {
-            return MessageSenders
+            var plugIn = MessageSenders
               .Where(ms => ms.Metadata.Name.Equals(name))
-              .Select(ms => ms.Value)
-              .FirstOrDefault();
+              .Select(ms => ms.Value);
+
+            if (plugIn == null)
+            {
+                throw new ApplicationException($"No plug-in found for Event Type: [{name}]");
+            }
+            else if (plugIn.Count() != 1)
+            {
+                throw new ApplicationException($"Multiple plug-ins [{plugIn.Count()}] found for Event Type: [{name}]");
+            }
+            else
+            {
+                return plugIn.FirstOrDefault();
+            }
         }
      
         /// <summary>
-        /// This collection holds the dynamically loaded assys    
-        /// </summary>
-        /// <value>The message senders.</value>
-        [ImportMany()]
-        public static IEnumerable<Lazy<IMessageSender, MessageSenderType>> MessageSenders { get; set; }
-
-        /// <summary>
-        /// Build the conposition host from assys that are dynamically loaded from a specific subfolder.
+        /// Build the composition host from assys that are dynamically loaded from a specific subfolder.
         /// </summary>
         private static void Compose()
         {
@@ -92,14 +147,17 @@ namespace FIS.USESA.POC.Plugins.Host
                         .GetFiles(path, "*.dll", SearchOption.AllDirectories)
                         .Select(AssemblyLoadContext.Default.LoadFromAssemblyPath)
                         .ToList();
+
             var configuration = new ContainerConfiguration()
                         .WithAssemblies(assemblies);
 
             // load the plug-in assys that export the correct attribute
             using (var container = configuration.CreateContainer())
             {
-                MessageSenders = container.GetExports<Lazy<IMessageSender, MessageSenderType>>();
+                MessageSenders = container.GetExports<Lazy<IEventPublisher, MessageSenderType>>();
             }
         }
+
+        #endregion
     }
 }

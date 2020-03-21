@@ -2,6 +2,7 @@
 using System.Composition;
 
 using FIS.USESA.POC.Plugins.Interfaces;
+using FIS.USESA.POC.Plugins.Interfaces.Entities;
 
 namespace FIS.USESA.POC.Plugins.ExampleA
 {
@@ -10,17 +11,39 @@ namespace FIS.USESA.POC.Plugins.ExampleA
     /// </summary>
     /// <remarks>
     /// A post build step for this project copies all the build outputs to a known (shared) location
-    /// All classes of this type will have the same Export attribute to identify this as a plug-in
-    /// Each class will have a unique value for the ExportMetadata attribute allows this particular plug-in to be selected at runtime.
+    /// The Export attribute identifies this as a plug-in
+    /// The ExportMetadata attribute allows this particular plug-in to be selected at runtime and must be unique!.
     /// </remarks>
-    [Export(typeof(IMessageSender))]
+    [Export(typeof(IEventPublisher))]
     [ExportMetadata(MessageSenderType.ATTRIBUTE_NAME, @"ExampleA")]
-    public class ExampleASender : IMessageSender
+    public class ExampleASender : IEventPublisher
     {
-        public string Send(string message)
+        const string TOPIC_NAME = @"MESSAGE_TYPE_A_TOPIC";
+
+        KafkaServiceConfigBE _configInfo;
+
+        /// <summary>
+        /// Injects the configuration.
+        /// </summary>
+        /// <param name="configInfo">The configuration information.</param>
+        public void InjectConfig(KafkaServiceConfigBE configInfo)
         {
-            string response = $"Sending Message: [{message}] from [{nameof(ExampleASender)}]";
+            _configInfo = configInfo;
+
+            // TODO: configure ProducerConfig & SchemaRegistryConfig
+        }
+
+        /// <summary>
+        /// Publishes the event.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <returns>System.String.</returns>
+        public string PublishEvent(string message)
+        {
+            string response = $"==> Publish Message: [{message}] from [{nameof(ExampleASender)}] to topic: [{TOPIC_NAME}] on kafka cluster: [{_configInfo.BootstrapServers}]";
             Console.WriteLine(response);
+
+            // TODO: write publishing logic
 
             return response;
         }
