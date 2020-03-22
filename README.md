@@ -24,7 +24,7 @@ There is no direct connection between the Hosting process and the plug-ins.  The
 
 ![docker-compose up -d Screenshot](images/assemblies.jpg?raw=true)
 
-> **Note**: No Compile time references! 
+> **Note**: No Compile time references between the hosting program and the plug-ins! 
 
 ![docker-compose up -d Screenshot](images/solution.jpg?raw=true)
 
