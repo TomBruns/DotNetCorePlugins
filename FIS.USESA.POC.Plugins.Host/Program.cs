@@ -30,7 +30,9 @@ namespace FIS.USESA.POC.Plugins.Host
         // this is the subfolder where all the plug-ins will be loaded from
         const string PLUGIN_FOLDER = @"Plugins";
 
-        // this collection holds the dynamically loaded assys    
+        // this collection holds the dynamically loaded assys   
+        //  IEventPublisher is the common interface that all the sample plug-ins will implement
+        //  MessageSenderType has a custom property that will allow us to pick a specific plug-in
         [ImportMany()]
         private static IEnumerable<Lazy<IEventPublisher, MessageSenderType>> MessageSenders { get; set; }
 
