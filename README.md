@@ -18,7 +18,7 @@ MEF is the ability to provide the necessary implementation of a dependency when 
 MEF takes advantage of an attribute based discovery mechanism to promote extensibility without the need of configuring the components. You don't need any registration -- you just need to mark your types with the Export attribute and it does all for you. 
 
 ---
-## DI and MEF
+## Implementation
 
 There is no direct connection between the Hosting process and the plug-ins.  They only both reference an independent assembly that defines an interface.
 
