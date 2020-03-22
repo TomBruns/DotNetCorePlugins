@@ -26,7 +26,7 @@ There is no direct connection between the Hosting process and the plug-ins.  The
 
 > **Note**: No Compile time references between the hosting program and the plug-ins! 
 
-![docker-compose up -d Screenshot](images/solution.jpg?raw=true)
+![docker-compose up -d Screenshot](images/solution2.jpg?raw=true)
 
 At deployment time, all of the plug-in assemblies (dlls) are copied to a child folder that will be probed at start-up.
 
