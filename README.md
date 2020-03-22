@@ -22,7 +22,7 @@ MEF takes advantage of an attribute based discovery mechanism to promote extensi
 
 There is no direct connection between the Hosting process and the plug-ins.  They only both reference an independent assembly that defines an interface.
 
-![docker-compose up -d Screenshot](images/assemblies.jpg?raw=true)
+![docker-compose up -d Screenshot](images/assemblies2.jpg?raw=true)
 
 > **Note**: No Compile time references between the hosting program and the plug-ins! 
 
