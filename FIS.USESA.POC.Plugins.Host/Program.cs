@@ -68,6 +68,19 @@ namespace FIS.USESA.POC.Plugins.Host
             Console.WriteLine();
 
             // ==========================
+            // for troubleshooting purposes, enumerate all of the loaded assys
+            // ==========================
+            Console.WriteLine("-------------------------------------------------------------------------------");
+            Console.WriteLine("Loaded Assemblies:");
+            Console.WriteLine();
+            var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
+            foreach(var loadedAssembly in loadedAssemblies.Where(a => !a.IsDynamic))
+            {
+                var nameParts = loadedAssembly.FullName.Split(",");
+                Console.WriteLine($"==> [{nameParts[0]}] from [{loadedAssembly.Location}]");
+            }
+
+            // ==========================
             // on startup, inject the config info into all of the plug-ins
             // ==========================
             foreach (var plugin in MessageSenders)
@@ -93,7 +106,10 @@ namespace FIS.USESA.POC.Plugins.Host
             // declare outside loop to reduce gc pressure
             IEventPublisher eventPublisher = null;
 
+            Console.WriteLine();
+            Console.WriteLine("-------------------------------------------------------------------------------");
             Console.WriteLine($"Step 2&3: Process some messages dynamically calling the correct plug-in");
+            Console.WriteLine();
             foreach (var eventInstance in events)
             {
                 // use the string value of the EventType property to dynamically select the correct plug-in assy to use to process the event

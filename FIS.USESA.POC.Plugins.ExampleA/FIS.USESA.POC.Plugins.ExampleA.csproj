@@ -9,6 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\FIS.USESA.POC.Plugins.ExampleADependency\FIS.USESA.POC.Plugins.ExampleADependency.csproj" />
     <ProjectReference Include="..\FIS.USESA.POC.Plugins.Interfaces\FIS.USESA.POC.Plugins.Interfaces.csproj" />
   </ItemGroup>
 

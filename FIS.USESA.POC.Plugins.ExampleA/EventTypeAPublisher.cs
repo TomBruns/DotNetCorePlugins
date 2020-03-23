@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Composition;
-
+using FIS.USESA.POC.Plugins.ExampleADependency;
 using FIS.USESA.POC.Plugins.Interfaces;
 using FIS.USESA.POC.Plugins.Interfaces.Entities;
 
@@ -40,7 +40,8 @@ namespace FIS.USESA.POC.Plugins.ExampleA
         /// <returns>System.String.</returns>
         public string PublishEvent(string message)
         {
-            string response = $"==> Publish Message: [{message}] from [{nameof(EventTypeAPublisher)}] to topic: [{TOPIC_NAME}] on kafka cluster: [{_configInfo.BootstrapServers}]";
+            string testDependency = ExampleAChildDependency.Test();
+            string response = $"==> Publish Message: [{message}] from [{nameof(EventTypeAPublisher)}] and [{testDependency}] to topic: [{TOPIC_NAME}] on kafka cluster: [{_configInfo.BootstrapServers}]";
             Console.WriteLine(response);
 
             // TODO: write publishing logic

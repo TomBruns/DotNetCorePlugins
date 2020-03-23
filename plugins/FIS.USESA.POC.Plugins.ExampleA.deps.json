@@ -9,6 +9,7 @@
     ".NETStandard,Version=v2.1/": {
       "FIS.USESA.POC.Plugins.ExampleA/1.0.0": {
         "dependencies": {
+          "FIS.USESA.POC.Plugins.ExampleADependency": "1.0.0",
           "FIS.USESA.POC.Plugins.Interfaces": "1.0.0",
           "System.Composition.AttributedModel": "1.4.0"
         },
@@ -108,6 +109,11 @@
           }
         }
       },
+      "FIS.USESA.POC.Plugins.ExampleADependency/1.0.0": {
+        "runtime": {
+          "FIS.USESA.POC.Plugins.ExampleADependency.dll": {}
+        }
+      },
       "FIS.USESA.POC.Plugins.Interfaces/1.0.0": {
         "dependencies": {
           "System.Text.Json": "4.7.1"
@@ -186,6 +192,11 @@
       "sha512": "sha512-BG/TNxDFv0svAzx8OiMXDlsHfGw623BZ8tCXw4YLhDFDvDhNUEV58jKYMGRnkbJNm7c3JNNJDiN7JBMzxRBR2w==",
       "path": "system.threading.tasks.extensions/4.5.2",
       "hashPath": "system.threading.tasks.extensions.4.5.2.nupkg.sha512"
+    },
+    "FIS.USESA.POC.Plugins.ExampleADependency/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
     },
     "FIS.USESA.POC.Plugins.Interfaces/1.0.0": {
       "type": "project",
