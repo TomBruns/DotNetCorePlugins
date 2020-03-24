@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Composition;
-
+using System.Threading.Tasks;
 using FIS.USESA.POC.Plugins.Interfaces;
 using FIS.USESA.POC.Plugins.Interfaces.Entities;
 
@@ -38,7 +38,7 @@ namespace FIS.USESA.POC.Plugins.ExampleB
         /// </summary>
         /// <param name="message">The message.</param>
         /// <returns>System.String.</returns>
-        public string PublishEvent(string message)
+        public async Task<string> PublishEvent(string message)
         {
             string response = $"==> Publish Message: [{message}] from [{nameof(EventTypeBPublisher)}] to topic: [{TOPIC_NAME}] on kafka cluster: [{_configInfo.BootstrapServers}]";
             Console.WriteLine(response);

@@ -5,12 +5,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Confluent.SchemaRegistry.Serdes" Version="1.3.0" />
     <PackageReference Include="System.Composition.AttributedModel" Version="1.4.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\FIS.USESA.POC.Plugins.ExampleADependency\FIS.USESA.POC.Plugins.ExampleADependency.csproj" />
     <ProjectReference Include="..\FIS.USESA.POC.Plugins.Interfaces\FIS.USESA.POC.Plugins.Interfaces.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="User\" />
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
