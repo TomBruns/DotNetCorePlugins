@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="md &quot;$(SolutionDir)\plugins&quot;&#xD;&#xA;copy &quot;$(OutDir)*.*&quot; &quot;$(SolutionDir)\plugins&quot;" />
+    <Exec Command="xcopy /S /Y &quot;$(OutDir)*.*&quot; &quot;$(SolutionDir)plugins\ExampleB\&quot;" />
   </Target>
 
 </Project>

@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="md  &quot;$(TargetDir)plugins\&quot;&#xD;&#xA;copy /Y &quot;$(SolutionDir)plugins\*.*&quot; &quot;$(TargetDir)plugins\&quot;" />
+    <Exec Command="xcopy /S /Y &quot;$(SolutionDir)plugins\*.*&quot; &quot;$(TargetDir)plugins\&quot;&#xD;&#xA;" />
   </Target>
 
 </Project>
