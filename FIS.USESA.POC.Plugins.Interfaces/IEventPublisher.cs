@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-
+using System.Threading.Tasks;
 using FIS.USESA.POC.Plugins.Interfaces.Entities;
 
 namespace FIS.USESA.POC.Plugins.Interfaces
@@ -16,6 +16,6 @@ namespace FIS.USESA.POC.Plugins.Interfaces
     {
         void InjectConfig(KafkaServiceConfigBE configInfo);
 
-        string PublishEvent(string message);
+        Task<string> PublishEvent(string message);
     }
 }

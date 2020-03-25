@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
-
+using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.FileExtensions;
 using Microsoft.Extensions.Configuration.Json;
@@ -61,8 +61,9 @@ namespace FIS.USESA.POC.Plugins.Host
             Compose();
             //ComposeIsolated(new List<string>() { @"FIS.USESA.POC.Plugins.Interfaces.dll" } );
 
+            if (MessageSenders == null) return;
             Console.WriteLine($"Step 1: Loaded [{MessageSenders.Count()}] plug-in assys from subfolder: [.\\{PLUGIN_FOLDER}]");
-            foreach(var plugin in MessageSenders)
+            foreach (var plugin in MessageSenders)
             {
                 Console.WriteLine($"==> {plugin.Value.GetType().Assembly.FullName}");
             }
@@ -75,7 +76,7 @@ namespace FIS.USESA.POC.Plugins.Host
             Console.WriteLine("Loaded Assemblies:");
             Console.WriteLine();
             var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
-            foreach(var loadedAssembly in loadedAssemblies.Where(a => !a.IsDynamic))
+            foreach (var loadedAssembly in loadedAssemblies.Where(a => !a.IsDynamic))
             {
                 var loadContext = AssemblyLoadContext.GetLoadContext(loadedAssembly.GetType().Assembly);
                 var nameParts = loadedAssembly.FullName.Split(",");
@@ -124,6 +125,7 @@ namespace FIS.USESA.POC.Plugins.Host
             Console.WriteLine(@"=============================================================");
             Console.WriteLine(@"Hit any key to exit....");
             Console.ReadLine();
+
         }
 
         #region Helpers
@@ -152,7 +154,7 @@ namespace FIS.USESA.POC.Plugins.Host
                 return plugIn.FirstOrDefault();
             }
         }
-     
+
         /// <summary>
         /// Build the composition host from assys that are dynamically loaded from a specific subfolder.
         /// </summary>
@@ -171,10 +173,33 @@ namespace FIS.USESA.POC.Plugins.Host
             var configuration = new ContainerConfiguration()
                         .WithAssemblies(assemblies);
 
-            // load the plug-in assys that export the correct attribute
-            using (var container = configuration.CreateContainer())
+            try
             {
-                MessageSenders = container.GetExports<Lazy<IEventPublisher, MessageSenderType>>();
+                // load the plug-in assys that export the correct attribute
+                using (var container = configuration.CreateContainer())
+                {
+                    MessageSenders = container.GetExports<Lazy<IEventPublisher, MessageSenderType>>();
+                }
+            }
+            catch (ReflectionTypeLoadException ex)
+            {
+                StringBuilder sb = new StringBuilder();
+                foreach (Exception exSub in ex.LoaderExceptions)
+                {
+                    sb.AppendLine(exSub.Message);
+                    FileNotFoundException exFileNotFound = exSub as FileNotFoundException;
+                    if (exFileNotFound != null)
+                    {
+                        if (!string.IsNullOrEmpty(exFileNotFound.FusionLog))
+                        {
+                            sb.AppendLine("Fusion Log:");
+                            sb.AppendLine(exFileNotFound.FusionLog);
+                        }
+                    }
+                    sb.AppendLine();
+                }
+                string errorMessage = sb.ToString();
+                Console.WriteLine(errorMessage);
             }
         }
 
