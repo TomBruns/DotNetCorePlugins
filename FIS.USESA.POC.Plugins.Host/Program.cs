@@ -59,6 +59,7 @@ namespace FIS.USESA.POC.Plugins.Host
             // load the plug-in assys 
             // ==========================
             Compose();
+            //ComposeIsolated(new List<string>() { @"FIS.USESA.POC.Plugins.Interfaces.dll" } );
 
             Console.WriteLine($"Step 1: Loaded [{MessageSenders.Count()}] plug-in assys from subfolder: [.\\{PLUGIN_FOLDER}]");
             foreach(var plugin in MessageSenders)
@@ -76,8 +77,9 @@ namespace FIS.USESA.POC.Plugins.Host
             var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
             foreach(var loadedAssembly in loadedAssemblies.Where(a => !a.IsDynamic))
             {
+                var loadContext = AssemblyLoadContext.GetLoadContext(loadedAssembly.GetType().Assembly);
                 var nameParts = loadedAssembly.FullName.Split(",");
-                Console.WriteLine($"==> [{nameParts[0]}] from [{loadedAssembly.Location}]");
+                Console.WriteLine($"==> [{nameParts[0]}] from [{loadedAssembly.Location}] in LoadContext: [{loadContext.Name}]");
             }
 
             // ==========================
@@ -137,7 +139,7 @@ namespace FIS.USESA.POC.Plugins.Host
               .Where(ms => ms.Metadata.Name.Equals(name))
               .Select(ms => ms.Value);
 
-            if (plugIn == null)
+            if (plugIn == null || plugIn.Count() == 0)
             {
                 throw new ApplicationException($"No plug-in found for Event Type: [{name}]");
             }
@@ -176,6 +178,45 @@ namespace FIS.USESA.POC.Plugins.Host
             }
         }
 
+        private static void ComposeIsolated(List<string> assysToIgnore)
+        {
+            // build the correct path to load the plug-in assys from
+            var executableLocation = Assembly.GetEntryAssembly().Location;
+            var path = Path.Combine(Path.GetDirectoryName(executableLocation), PLUGIN_FOLDER);
+
+            // find the names of all the plug-in subfolders
+            var plugInFolderPathNames = Directory.GetDirectories(path);
+
+            Dictionary<string, IEnumerable<Lazy<IEventPublisher, MessageSenderType>>> test = new Dictionary<string, IEnumerable<Lazy<IEventPublisher, MessageSenderType>>>();
+
+            // loop thru each plug-in subfolder and load the assys into a separate (isolated) load context.
+            foreach (var plugInFolderPathName in plugInFolderPathNames)
+            {
+                var plugInFolderName = Path.GetFileName(plugInFolderPathName);
+
+                var assyLoadContext = new AssemblyLoadContext(plugInFolderName);
+
+                // get a list of all the assys from that path
+                var assemblies = Directory
+                            .GetFiles(plugInFolderPathName, "*.dll", SearchOption.AllDirectories)
+                            .Where(f => !f.Contains(assysToIgnore[0]))
+                            .Select(assyLoadContext.LoadFromAssemblyPath)
+                            .ToList();
+
+                var configuration = new ContainerConfiguration()
+                            .WithAssemblies(assemblies);
+
+                // load the plug-in assys that export the correct attribute
+                using (var container = configuration.CreateContainer())
+                {
+                    MessageSenders = container.GetExports<Lazy<IEventPublisher, MessageSenderType>>();
+                }
+
+                test.Add(plugInFolderName, MessageSenders);
+
+                MessageSenders = (IEnumerable<Lazy<IEventPublisher, MessageSenderType>>)test.Values.ToList();
+            }
+        }
         #endregion
     }
 }
