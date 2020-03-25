@@ -223,16 +223,17 @@ namespace FIS.USESA.POC.Plugins.Host
 
             foreach (var filePathName in files)
             {
-                if (@"FIS.USESA.POC.Plugins.Interfaces.dll" == Path.GetFileName(filePathName))
-                    continue;
-
                 try
                 {
+                    // this call will throw an exception if this is not a managed dll
                     System.Reflection.AssemblyName testAssembly = System.Reflection.AssemblyName.GetAssemblyName(filePathName);
 
                     assyPathNames.Add(filePathName);
                 }
-                catch { }
+                catch 
+                { 
+                    // swallow the exception and continue
+                }
             }
 
             return assyPathNames;
