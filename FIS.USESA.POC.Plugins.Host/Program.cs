@@ -164,12 +164,15 @@ namespace FIS.USESA.POC.Plugins.Host
             var executableLocation = Assembly.GetEntryAssembly().Location;
             var path = Path.Combine(Path.GetDirectoryName(executableLocation), PLUGIN_FOLDER);
 
-            // get a list of all the assys from that path
-            var assemblies = Directory
-                        .GetFiles(path, "*.dll", SearchOption.AllDirectories)
+            // get a list of only the managed dlls
+            var managedDlls = GetListOfManagedAssemblies(path, SearchOption.AllDirectories);
+
+            // load the assys
+            var assemblies = managedDlls
                         .Select(AssemblyLoadContext.Default.LoadFromAssemblyPath)
                         .ToList();
 
+            // build a composition container
             var configuration = new ContainerConfiguration()
                         .WithAssemblies(assemblies);
 
@@ -203,6 +206,46 @@ namespace FIS.USESA.POC.Plugins.Host
             }
         }
 
+        /// <summary>
+        /// Gets the list of managed assemblies.
+        /// </summary>
+        /// <param name="folderPath">The folder path.</param>
+        /// <param name="searchOption">The search option.</param>
+        /// <returns>List&lt;System.String&gt;.</returns>
+        /// <remarks>
+        /// Some of the dlls in the target folder may be unmanaged dlls referenced by managed dlls, we need to exclude those
+        /// </remarks>
+        private static List<string> GetListOfManagedAssemblies(string folderPath, SearchOption searchOption)
+        {
+            List<string> assyPathNames = new List<string>();
+
+            var files = Directory.GetFiles(folderPath, "*.dll", searchOption);
+
+            foreach (var filePathName in files)
+            {
+                if (@"FIS.USESA.POC.Plugins.Interfaces.dll" == Path.GetFileName(filePathName))
+                    continue;
+
+                try
+                {
+                    System.Reflection.AssemblyName testAssembly = System.Reflection.AssemblyName.GetAssemblyName(filePathName);
+
+                    assyPathNames.Add(filePathName);
+                }
+                catch { }
+            }
+
+            return assyPathNames;
+        }
+
+        /// <summary>
+        /// A research spike into loading each plugin's assys into an isolated AssemblyLoadContext
+        /// </summary>
+        /// <param name="assysToIgnore">The assys to ignore.</param>
+        /// <remarks>
+        /// assysToIgnore is a list of assys NOT to load into the plug-in AssemblyLoadContext so the types will
+        /// match and the a GetExports call will recognize them as the same type
+        /// </remarks>
         private static void ComposeIsolated(List<string> assysToIgnore)
         {
             // build the correct path to load the plug-in assys from

@@ -1,7 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
+    <!-- This forces the nuget assys to be copied to the output folder (but not the unmanged ones they reference, unfortunately all the Microsoft*.dll and System*.dll come along also -->
+    <RuntimeIdentifiers>win10-x64</RuntimeIdentifiers>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,8 +15,17 @@
     <ProjectReference Include="..\FIS.USESA.POC.Plugins.Interfaces\FIS.USESA.POC.Plugins.Interfaces.csproj" />
   </ItemGroup>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="xcopy /S /Y &quot;$(OutDir)*.*&quot; &quot;$(SolutionDir)plugins\ExampleB\&quot;" />
+  <!-- Define an item group that filters out the .NET Framework assys -->
+  <ItemGroup>
+    <ModuleFiles
+      Include="$(TargetDir)win-x64\publish\*.dll"
+      Exclude="$(TargetDir)win-x64\publish\System*.dll;$(TargetDir)win-x64\publish\Microsoft*.dll">
+    </ModuleFiles>
+  </ItemGroup>
+
+  <!-- If we do a self contained dotnet publish we also get the unmanaged dlls -->
+  <Target  Name="CopyToStaging" AfterTargets="AfterPublish">
+    <Copy SourceFiles="@(ModuleFiles)" DestinationFolder="..\plugins\$(TargetName)" />
   </Target>
 
 </Project>
