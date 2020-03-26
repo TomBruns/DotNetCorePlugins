@@ -86,40 +86,40 @@ namespace FIS.USESA.POC.Plugins.ExampleA
         private async Task Produce()
         {
             CancellationTokenSource cts = new CancellationTokenSource();
-            var consumeTask = Task.Run(() =>
-            {
-                using (var schemaRegistry = new CachedSchemaRegistryClient(_schemaRegistryConfig))
-                using (var consumer =
-                    new ConsumerBuilder<string, User.User>(_consumerConfig)
-                        .SetKeyDeserializer(new AvroDeserializer<string>(schemaRegistry).AsSyncOverAsync())
-                        .SetValueDeserializer(new AvroDeserializer<User.User>(schemaRegistry).AsSyncOverAsync())
-                        .SetErrorHandler((_, e) => Console.WriteLine($"Error: {e.Reason}"))
-                        .Build())
-                {
-                    consumer.Subscribe(TOPIC_NAME);
+            //var consumeTask = Task.Run(() =>
+            //{
+            //    using (var schemaRegistry = new CachedSchemaRegistryClient(_schemaRegistryConfig))
+            //    using (var consumer =
+            //        new ConsumerBuilder<string, User.User>(_consumerConfig)
+            //            .SetKeyDeserializer(new AvroDeserializer<string>(schemaRegistry).AsSyncOverAsync())
+            //            .SetValueDeserializer(new AvroDeserializer<User.User>(schemaRegistry).AsSyncOverAsync())
+            //            .SetErrorHandler((_, e) => Console.WriteLine($"Error: {e.Reason}"))
+            //            .Build())
+            //    {
+            //        consumer.Subscribe(TOPIC_NAME);
 
-                    try
-                    {
-                        while (true)
-                        {
-                            try
-                            {
-                                var consumeResult = consumer.Consume(cts.Token);
+            //        try
+            //        {
+            //            while (true)
+            //            {
+            //                try
+            //                {
+            //                    var consumeResult = consumer.Consume(cts.Token);
 
-                                Console.WriteLine($"user name: {consumeResult.Message.Key}, favorite color: {consumeResult.Value.favorite_color}");
-                            }
-                            catch (ConsumeException e)
-                            {
-                                Console.WriteLine($"Consume error: {e.Error.Reason}");
-                            }
-                        }
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        consumer.Close();
-                    }
-                }
-            });
+            //                    Console.WriteLine($"user name: {consumeResult.Message.Key}, favorite color: {consumeResult.Value.favorite_color}");
+            //                }
+            //                catch (ConsumeException e)
+            //                {
+            //                    Console.WriteLine($"Consume error: {e.Error.Reason}");
+            //                }
+            //            }
+            //        }
+            //        catch (OperationCanceledException)
+            //        {
+            //            consumer.Close();
+            //        }
+            //    }
+            //});
 
             using (var schemaRegistry = new CachedSchemaRegistryClient(_schemaRegistryConfig))
             using (var producer =
