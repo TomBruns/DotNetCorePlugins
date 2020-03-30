@@ -20,14 +20,79 @@ MEF takes advantage of an attribute based discovery mechanism to promote extensi
 ---
 ## Implementation
 
-There is no direct connection between the Hosting process and the plug-ins.  They both only reference a common assembly that defines an interface.
+The plug-ins are implemented as independent assemblies.  There is no direct connection between the Hosting process and the plug-ins.  They both only reference a common assembly that defines an interface.
 
 ![docker-compose up -d Screenshot](images/assemblies2.jpg?raw=true)
 
 > **Note**: No Compile time references between the hosting program and the plug-ins! 
 
-![docker-compose up -d Screenshot](images/solution2.jpg?raw=true)
+![docker-compose up -d Screenshot](images/solutionstructure.jpg?raw=true)
 
-At deployment time, all of the plug-in assemblies (dlls) are copied to a child folder that will be probed at start-up.
+At deployment (or post-build) time, all of the plug-in assemblies (dlls) are copied to unique subfolders under a parent folder that is probed at start-up.
 
-![docker-compose up -d Screenshot](images/folders.jpg?raw=true)
+![docker-compose up -d Screenshot](images/pluginfolders.jpg?raw=true)
+
+---
+## Building
+
+1. Do a rebuild all *(this makes sure there are no compile errors)*.
+2. In each of the plugin project folders *(this copies the plug-in assys to the **PlugInStaging** folder)*...  
+  .1 Open a command window  
+  .2 execute: `dotnet publish --runtime win-x64 --self-contained true`  
+  .3 execute: `dotnet build -target:CopyToStaging`  
+3. Build the Host.exe project *(this copies the plug-in folders to the exe's child folder)*
+---
+## Running
+
+Open a dos windows in the `\bin\Debug\netcoreapp3.1>` folder of each of the projects below and execute the associated exe:
+* FIS.USESA.POC.Plugins.Host.exe
+* FIS.USA.POC.EventTypeA.Consumer.exe
+* FIS.USA.POC.EventTypeB.Consumer.exe
+* FIS.USA.POC.EventTypeC.Consumer.exe
+
+Below you can see the results of starting each of the four (4) executables in their own window.
+
+
+![Running Screenshot](images/running.jpg?raw=true)
+
+---
+## Kafka Topics
+
+Each Event Type plug-in publishes to a unique Kafka Topic:
+
+![Running Screenshot](images/kafkatopics.jpg?raw=true)
+
+* The topic name is defined in the Event Type publisher
+```csharp
+[Export(typeof(IEventPublisher))]
+[ExportMetadata(MessageSenderType.ATTRIBUTE_NAME, @"EventTypeC")]
+public class EventTypeCPublisher : IEventPublisher
+{
+    public static readonly string TOPIC_NAME = @"EVENT_TYPE_C_TOPIC";
+```
+## Kafka Consumer Groups
+Each Event Type subscriber has a unique Kafka Consumer Group.
+
+![Running Screenshot](images/kafkaconsumergroups.jpg?raw=true)
+
+* The consumer group name is defined in the Event Type publisher:
+
+```csharp
+namespace FIS.USA.POC.EventTypeC.Consumer
+{
+    /// <summary>
+    /// This is an example topic consumer.
+    /// </summary>
+    class Program
+    {
+        private const string CONSUMER_GROUP_NAME = @"EVENT_TYPE_C_CONSUMER_GROUP";
+```
+---
+## Plug-in csproj changes
+
+Each plug-in csproj needs to have the following changes:
+
+![Running Screenshot](images/plugincsprojchgs.jpg?raw=true)
+
+1. Configure so the publish command will copy all of the nuget package assemblies AND any unmanaged assemblies they reference.
+2. Filter the build output and copy to a unique folder under .\PluginsStaging\\\<project-name>
