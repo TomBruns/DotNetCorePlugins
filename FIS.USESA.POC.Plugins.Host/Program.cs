@@ -7,12 +7,17 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
 using System.Text;
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.FileExtensions;
 using Microsoft.Extensions.Configuration.Json;
 
+using Serilog;
+
 using FIS.USESA.POC.Plugins.Interfaces;
-using FIS.USESA.POC.Plugins.Interfaces.Entities;
+using FIS.USESA.POC.Plugins.Host.Entities;
+using FIS.USESA.POC.Plugins.Interfaces.Entities.Config;
+using Serilog.Extensions.Logging;
 
 namespace FIS.USESA.POC.Plugins.Host
 {
@@ -29,6 +34,7 @@ namespace FIS.USESA.POC.Plugins.Host
     {
         // this is the subfolder where all the plug-ins will be loaded from
         const string PLUGIN_FOLDER = @"Plugins";
+        const bool IS_DETAILED_DEBUG_MODE = false;
 
         // this collection holds the dynamically loaded assys   
         //  IEventPublisher is the common interface that all the sample plug-ins will implement
@@ -38,6 +44,13 @@ namespace FIS.USESA.POC.Plugins.Host
 
         static void Main(string[] args)
         {
+            // configure logging
+            Log.Logger = new LoggerConfiguration()
+                                .WriteTo.Console()
+                                .CreateLogger();
+
+            var logger = new SerilogLoggerProvider(Log.Logger).CreateLogger(nameof(Program));
+
             Console.WriteLine("Plugin Demo");
             Console.WriteLine(" 1. loading plug-in assys from a subfolder on start-up");
             Console.WriteLine(" 2. dynamically pick a specific plug-in based on runtime supplied criteria");
@@ -69,18 +82,21 @@ namespace FIS.USESA.POC.Plugins.Host
             }
             Console.WriteLine();
 
-            // ==========================
-            // for troubleshooting purposes, enumerate all of the loaded assys
-            // ==========================
-            Console.WriteLine("-------------------------------------------------------------------------------");
-            Console.WriteLine("Loaded Assemblies:");
-            Console.WriteLine();
-            var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
-            foreach (var loadedAssembly in loadedAssemblies.Where(a => !a.IsDynamic))
+            if (IS_DETAILED_DEBUG_MODE)
             {
-                var loadContext = AssemblyLoadContext.GetLoadContext(loadedAssembly.GetType().Assembly);
-                var nameParts = loadedAssembly.FullName.Split(",");
-                Console.WriteLine($"==> [{nameParts[0]}] from [{loadedAssembly.Location}] in LoadContext: [{loadContext.Name}]");
+                // ==========================
+                // for troubleshooting purposes, enumerate all of the loaded assys
+                // ==========================
+                Console.WriteLine("-------------------------------------------------------------------------------");
+                Console.WriteLine("Loaded Assemblies:");
+                Console.WriteLine();
+                var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
+                foreach (var loadedAssembly in loadedAssemblies.Where(a => !a.IsDynamic))
+                {
+                    var loadContext = AssemblyLoadContext.GetLoadContext(loadedAssembly.GetType().Assembly);
+                    var nameParts = loadedAssembly.FullName.Split(",");
+                    Console.WriteLine($"==> [{nameParts[0]}] from [{loadedAssembly.Location}] in LoadContext: [{loadContext.Name}]");
+                }
             }
 
             // ==========================
@@ -88,19 +104,22 @@ namespace FIS.USESA.POC.Plugins.Host
             // ==========================
             foreach (var plugin in MessageSenders)
             {
-                plugin.Value.InjectConfig(kafkaConfig);
+                plugin.Value.InjectConfig(kafkaConfig, logger);
             }
 
             // ==========================
             // build a list of event to process
             // ==========================
+            // assume EventId, EventType, EventData all come from the DB
+            int eventId = 0;
+
             List<EventBE> events = new List<EventBE>
             {
-                new EventBE() { EventType = @"EventTypeA", Message = @"Message 1" },
-                new EventBE() { EventType = @"EventTypeB", Message = @"Message 2" },
-                new EventBE() { EventType = @"EventTypeB", Message = @"Message 3" },
-                new EventBE() { EventType = @"EventTypeA", Message = @"Message 4" },
-                new EventBE() { EventType = @"EventTypeB", Message = @"Message 5" }
+                new EventBE() { EventId = ++eventId, EventType = @"EventTypeA", EventData = @"Message 1" },
+                new EventBE() { EventId = ++eventId, EventType = @"EventTypeB", EventData = @"Message 2" },
+                new EventBE() { EventId = ++eventId, EventType = @"EventTypeC", EventData = @"Message 3" },
+                new EventBE() { EventId = ++eventId, EventType = @"EventTypeB", EventData = @"Message 4" },
+                new EventBE() { EventId = ++eventId, EventType = @"EventTypeA", EventData = @"Message 5" }
             };
 
             // ==========================
@@ -119,7 +138,7 @@ namespace FIS.USESA.POC.Plugins.Host
                 eventPublisher = GetEventPublisher(eventInstance.EventType);
 
                 // call the method on the dynamically selected assy
-                eventPublisher.PublishEvent(eventInstance.Message);
+                eventPublisher.PublishEvent(eventInstance.EventId, eventInstance.EventData);
             }
 
             Console.WriteLine(@"=============================================================");

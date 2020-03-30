@@ -1,0 +1,24 @@
+﻿{ 
+  "namespace": "FIS.USA.POC.EventTypeC.Shared",
+  "type": "record",
+  "name": "EventTypeCBody",
+  "fields": [
+    {
+      "name": "id",
+      "type": "int"
+    },
+    {
+      "name": "name",
+
+      "type": "string"
+    },
+    {
+      "name": "favorite_number",
+      "type": [ "int", "null" ]
+    },
+    {
+      "name": "favorite_color",
+      "type": [ "string", "null" ]
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <!-- This forces the nuget assys to be copied to the output folder (but not the unmanged ones they reference, unfortunately all the Microsoft*.dll and System*.dll come along also -->
+    <RuntimeIdentifiers>win10-x64</RuntimeIdentifiers>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.3" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="3.1.3" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.3" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.3" />
+    <PackageReference Include="System.Composition.AttributedModel" Version="1.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FIS.USA.POC.EventTypeB.Shared\FIS.USA.POC.EventTypeB.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="FIS.USESA.POC.Plugins.Interfaces">
+      <HintPath>..\PluginsShared\FIS.USESA.POC.Plugins.Interfaces.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <!-- Define an item group that filters out the .NET Framework assys -->
+  <ItemGroup>
+    <ModuleFiles Include="$(TargetDir)win-x64\publish\*.dll;$(TargetDir)win-x64\publish\*.json" Exclude="$(TargetDir)win-x64\publish\System*.dll;$(TargetDir)win-x64\publish\Microsoft*.dll">
+    </ModuleFiles>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <!-- If we do a self contained dotnet publish we also get the unmanaged dlls -->
+  <Target Name="CopyToStaging" AfterTargets="AfterPublish">
+    <Copy SourceFiles="@(ModuleFiles)" DestinationFolder="..\PluginsStaging\$(TargetName)" />
+  </Target>
+
+</Project>

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -7,27 +7,27 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.3" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="3.1.3" />
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="3.1.3" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.3" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="3.0.1" />
     <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
-    <PackageReference Include="System.Composition" Version="1.4.0" />
-    <PackageReference Include="System.Text.Json" Version="4.7.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FIS.USESA.POC.Plugins.Interfaces\FIS.USESA.POC.Plugins.Interfaces.csproj" />
+    <ProjectReference Include="..\FIS.USA.POC.EventTypeC.Plugin\FIS.USA.POC.EventTypeC.Plugin.csproj" />
+    <ProjectReference Include="..\FIS.USA.POC.EventTypeC.Shared\FIS.USA.POC.EventTypeC.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="FIS.USESA.POC.Plugins.Interfaces">
+      <HintPath>..\PluginsShared\FIS.USESA.POC.Plugins.Interfaces.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>
     <None Update="appsettings.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="xcopy /S /Y &quot;$(SolutionDir)PluginsStaging\*.*&quot; &quot;$(TargetDir)plugins\&quot;&#xD;&#xA;" />
-  </Target>
 
 </Project>

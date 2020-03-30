@@ -2,7 +2,11 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using FIS.USESA.POC.Plugins.Interfaces.Entities;
+
+using Microsoft.Extensions.Logging;
+
+using FIS.USESA.POC.Plugins.Interfaces.Entities.Config;
+using FIS.USESA.POC.Plugins.Interfaces.Entities.Kafka;
 
 namespace FIS.USESA.POC.Plugins.Interfaces
 {
@@ -14,8 +18,8 @@ namespace FIS.USESA.POC.Plugins.Interfaces
     /// </remarks>
     public interface IEventPublisher
     {
-        void InjectConfig(KafkaServiceConfigBE configInfo);
+        void InjectConfig(KafkaServiceConfigBE kafkaConfig, ILogger logger);
 
-        Task<string> PublishEvent(string message);
+        Task<PublishMsgResultsBE> PublishEvent(int eventId, string message);
     }
 }
