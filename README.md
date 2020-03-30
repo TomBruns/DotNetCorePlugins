@@ -26,11 +26,11 @@ The plug-ins are implemented as independent assemblies.  There is no direct conn
 
 > **Note**: No Compile time references between the hosting program and the plug-ins! 
 
-![Solution Structure Screenshot](images/solutionstructure.jpg?raw=true)
+![Solution Structure Screenshot](images/SolutionStructure.jpg?raw=true)
 
 At deployment (or post-build) time, all of the plug-in assemblies (dlls) are copied to unique subfolders under a parent folder that is probed at start-up.
 
-![PlugInFolders](images/pluginfolders.jpg?raw=true)
+![PlugInFolders](images/PlugInFolders.jpg?raw=true)
 
 ---
 ## Building
@@ -53,14 +53,14 @@ Open a dos windows in the `\bin\Debug\netcoreapp3.1>` folder of each of the proj
 Below you can see the results of starting each of the four (4) executables in their own window.
 
 
-![Running Screenshot](images/running.jpg?raw=true)
+![Running Screenshot](images/Running.jpg?raw=true)
 
 ---
 ## Kafka Topics
 
 Each Event Type plug-in publishes to a unique Kafka Topic:
 
-![Kafka Topics Screenshot](images/kafkatopics.jpg?raw=true)
+![Kafka Topics Screenshot](images/KafkaTopics.jpg?raw=true)
 
 * The topic name is defined in the Event Type publisher
 ```csharp
@@ -73,7 +73,7 @@ public class EventTypeCPublisher : IEventPublisher
 ## Kafka Consumer Groups
 Each Event Type subscriber has a unique Kafka Consumer Group.
 
-![Kafka Consumer Groups](images/kafkaconsumergroups.jpg?raw=true)
+![Kafka Consumer Groups](images/KafkaConsumerGroups.jpg?raw=true)
 
 * The consumer group name is defined in the Event Type publisher:
 
@@ -92,7 +92,7 @@ namespace FIS.USA.POC.EventTypeC.Consumer
 
 Each plug-in csproj needs to have the following changes:
 
-![CSProj Changes](images/plugincsprojchgs.jpg?raw=true)
+![CSProj Changes](images/PlugInCsprojChgs.jpg?raw=true)
 
 1. Configure so the publish command will copy all of the nuget package assemblies AND any unmanaged assemblies they reference.
 2. Filter the build output and copy to a unique folder under .\PluginsStaging\\\<project-name>
