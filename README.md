@@ -22,15 +22,15 @@ MEF takes advantage of an attribute based discovery mechanism to promote extensi
 
 The plug-ins are implemented as independent assemblies.  There is no direct connection between the Hosting process and the plug-ins.  They both only reference a common assembly that defines an interface.
 
-![docker-compose up -d Screenshot](images/assemblies2.jpg?raw=true)
+![Assembly Diagram Screenshot](images/assemblies2.jpg?raw=true)
 
 > **Note**: No Compile time references between the hosting program and the plug-ins! 
 
-![docker-compose up -d Screenshot](images/solutionstructure.jpg?raw=true)
+![Solution Structure Screenshot](images/solutionstructure.jpg?raw=true)
 
 At deployment (or post-build) time, all of the plug-in assemblies (dlls) are copied to unique subfolders under a parent folder that is probed at start-up.
 
-![docker-compose up -d Screenshot](images/pluginfolders.jpg?raw=true)
+![PlugInFolders](images/pluginfolders.jpg?raw=true)
 
 ---
 ## Building
@@ -60,7 +60,7 @@ Below you can see the results of starting each of the four (4) executables in th
 
 Each Event Type plug-in publishes to a unique Kafka Topic:
 
-![Running Screenshot](images/kafkatopics.jpg?raw=true)
+![Kafka Topics Screenshot](images/kafkatopics.jpg?raw=true)
 
 * The topic name is defined in the Event Type publisher
 ```csharp
@@ -73,7 +73,7 @@ public class EventTypeCPublisher : IEventPublisher
 ## Kafka Consumer Groups
 Each Event Type subscriber has a unique Kafka Consumer Group.
 
-![Running Screenshot](images/kafkaconsumergroups.jpg?raw=true)
+![Kafka Consumer Groups](images/kafkaconsumergroups.jpg?raw=true)
 
 * The consumer group name is defined in the Event Type publisher:
 
@@ -92,7 +92,7 @@ namespace FIS.USA.POC.EventTypeC.Consumer
 
 Each plug-in csproj needs to have the following changes:
 
-![Running Screenshot](images/plugincsprojchgs.jpg?raw=true)
+![CSProj Changes](images/plugincsprojchgs.jpg?raw=true)
 
 1. Configure so the publish command will copy all of the nuget package assemblies AND any unmanaged assemblies they reference.
 2. Filter the build output and copy to a unique folder under .\PluginsStaging\\\<project-name>
